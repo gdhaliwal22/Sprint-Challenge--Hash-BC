@@ -1,6 +1,5 @@
 import hashlib
 import requests
-import json
 
 import sys
 
@@ -13,7 +12,7 @@ import random
 
 def proof_of_work(last_proof):
     """
-    Multi-Ouroboros of Work Algorithm
+    Multi-Ouroboros of Work Algorithm 
     - Find a number p' such that the last five digits of hash(p) are equal
     to the first five digits of hash(p')
     - IE:  last_hash: ...AE912345, new hash 12345888...
@@ -24,28 +23,27 @@ def proof_of_work(last_proof):
     start = timer()
 
     print("Searching for next proof")
-    # use last hash to make dynamic proof
-    proof = last_proof
-    while valid_proof(last_proof, proof) is False:
-        proof += 1
+    proof = 0
+
+    last_hash = hashlib.sha256(str(last_proof).encode()).hexdigest()
+    while not valid_proof(last_hash, proof):
+        proof += random.randrange(1, 100)
 
     print("Proof found: " + str(proof) + " in " + str(timer() - start))
     return proof
 
 
-def valid_proof(last_proof, proof):
+def valid_proof(last_hash, proof):
     """
     Validates the Proof:  Multi-ouroborus:  Do the last five characters of
     the hash of the last proof match the first five characters of the hash
     of the new proof?
-
     IE:  last_hash: ...AE912345, new hash 12345E88...
     """
 
-    last_hash = hashlib.sha256(str(last_proof).encode()).hexdigest()
-    guess = hashlib.sha256(str(proof).encode()).hexdigest()
-
-    return last_hash[-6:] == guess[:6]
+    proof_string = str(proof).encode()
+    new_hash = hashlib.sha256(proof_string).hexdigest()
+    return new_hash[:5] == last_hash[-5:]
 
 
 if __name__ == '__main__':
